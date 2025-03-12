@@ -6,7 +6,7 @@
         <div>
           <button
             data-testing="toggle-reading-list"
-            mat-button
+            mat-raised-button
             (click)="drawer.toggle()"
           >
             Reading List
@@ -22,7 +22,7 @@
   <mat-drawer #drawer mode="over" position="end">
     <div class="reading-list-container" data-testing="reading-list-container">
       <h2>
-        My Reading List
+        <strong>My Reading List</strong>
         <button mat-icon-button (click)="drawer.close()">
           <mat-icon>close</mat-icon>
         </button>
