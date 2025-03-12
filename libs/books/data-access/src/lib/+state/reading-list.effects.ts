@@ -5,6 +5,9 @@ import { of } from 'rxjs';
 import { catchError, concatMap, exhaustMap, map } from 'rxjs/operators';
 import { ReadingListItem } from '@tmo/shared/models';
 import * as ReadingListActions from './reading-list.actions';
+import {MatSnackBar} from '@angular/material/snack-bar';
+import { Store } from '@ngrx/store';
+
 
 @Injectable()
 export class ReadingListEffects implements OnInitEffects {
@@ -28,12 +31,14 @@ export class ReadingListEffects implements OnInitEffects {
     this.actions$.pipe(
       ofType(ReadingListActions.addToReadingList),
       concatMap(({ book }) =>
-        this.http.post('/api/reading-list', book).pipe(
+      {
+        return this.http.post('/api/reading-list', book).pipe(
           map(() => ReadingListActions.confirmedAddToReadingList({ book })),
           catchError(() =>
             of(ReadingListActions.failedAddToReadingList({ book }))
           )
         )
+      }
       )
     )
   );
@@ -54,9 +59,55 @@ export class ReadingListEffects implements OnInitEffects {
     )
   );
 
+  confirmedAddToReadingList$ = createEffect(() =>
+    this.actions$.pipe(
+      ofType(ReadingListActions.confirmedAddToReadingList),
+      map((action) => {
+        const _snackBar = this.snackBar.open(`Added ${action.book.title} to your reading list`, 'Undo', {
+          duration: 5000,
+        });
+
+        _snackBar.onAction().subscribe(() => this.store.dispatch(ReadingListActions.undoAddToReadingList(action)));
+      })
+    ), { dispatch: false}
+  );
+
+  confirmedRemoveFromReadingList$ = createEffect(() =>
+    this.actions$.pipe(
+      ofType(ReadingListActions.confirmedRemoveFromReadingList),
+      map((action) => {
+        const _snackBar = this.snackBar.open(`Removed ${action.item.title} from your reading list`, 'Undo', {
+          duration: 5000,
+        });
+
+        _snackBar.onAction().subscribe(() => this.store.dispatch(ReadingListActions.undoRemoveFromReadingList({book: {...action.item, id: action.item.bookId}})));
+      })
+    ), { dispatch: false}
+  )
+
+  undoAddToReadingList$ = createEffect(() =>
+    this.actions$.pipe(
+      ofType(ReadingListActions.undoAddToReadingList),
+      map((action) => { 
+        this.store.dispatch(ReadingListActions.removeFromReadingList({ item: { ...action.book, bookId: action.book.id } }))
+       })
+    ), { dispatch: false}
+  );
+
+  undoRemoveFromReadingList$ = createEffect(() =>
+    this.actions$.pipe(
+      ofType(ReadingListActions.undoRemoveFromReadingList),
+      map((action) => { 
+        console.log(action);
+        this.store.dispatch(ReadingListActions.addToReadingList({book: { ...action.book }}));
+        this.snackBar.dismiss();
+      })
+    ), { dispatch: false}
+  );
+
   ngrxOnInitEffects() {
     return ReadingListActions.init();
   }
 
-  constructor(private actions$: Actions, private http: HttpClient) {}
+  constructor(private actions$: Actions, private http: HttpClient, private snackBar: MatSnackBar, private store: Store) {}
 }

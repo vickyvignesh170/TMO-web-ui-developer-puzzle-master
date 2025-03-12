@@ -44,7 +44,7 @@ export class BookSearchComponent implements OnInit {
   ) {}
 
   get searchTerm(): string {
-    return this.searchForm.value.term;
+    return this.searchForm.get('term')?.value;
   }
 
   ngOnInit(): void {
