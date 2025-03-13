@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import { Store } from '@ngrx/store';
 import {
   addToReadingList,
@@ -14,7 +14,8 @@ import {
   FormGroup,
 } from '@angular/forms';
 import { Book } from '@tmo/shared/models';
-import { Observable } from 'rxjs';
+import { Observable, Subject } from 'rxjs';
+import { debounceTime, distinctUntilChanged, takeUntil } from 'rxjs/operators';
 
 interface SearchForm {
   term: string;
@@ -31,8 +32,9 @@ type SearchFormGroup = FormGroup & {
   templateUrl: './book-search.component.html',
   styleUrls: ['./book-search.component.scss'],
 })
-export class BookSearchComponent implements OnInit {
+export class BookSearchComponent implements OnInit, OnDestroy {
   books$: Observable<ReadingListBook[]>;
+  componentDestroyed$: Subject<boolean> = new Subject();
 
   searchForm = this.fb.group({
     term: new FormControl(''),
@@ -49,6 +51,14 @@ export class BookSearchComponent implements OnInit {
 
   ngOnInit(): void {
     this.books$ = this.store.select(getAllBooks);
+    this.searchForm
+      .get('term')
+      ?.valueChanges.pipe(
+        takeUntil(this.componentDestroyed$),
+        debounceTime(500),
+        distinctUntilChanged()
+      )
+      .subscribe(() => this.searchBooks());
   }
 
   formatDate(date: void | string) {
@@ -73,5 +83,10 @@ export class BookSearchComponent implements OnInit {
 
   trackByFn(index: number, item: ReadingListBook) {
     return item.id;
+  }
+
+  ngOnDestroy() {
+    this.componentDestroyed$.next(true);
+    this.componentDestroyed$.complete();
   }
 }
