@@ -81,7 +81,7 @@ export class ReadingListEffects implements OnInitEffects {
           duration: 5000,
         });
 
-        _snackBar.onAction().subscribe(() => this.store.dispatch(ReadingListActions.undoRemoveFromReadingList(action)));
+        _snackBar.onAction().subscribe(() => this.store.dispatch(ReadingListActions.undoRemoveFromReadingList({book: {...action.item, id: action.item.bookId}})));
       })
     ), { dispatch: false}
   )
@@ -90,7 +90,7 @@ export class ReadingListEffects implements OnInitEffects {
     this.actions$.pipe(
       ofType(ReadingListActions.undoAddToReadingList),
       map((action) => { 
-        this.store.dispatch(ReadingListActions.removeFromReadingList({ item: { bookId: action.book?.id, title: action.book.title, authors: action.book.authors, description: action.book.description } }))
+        this.store.dispatch(ReadingListActions.removeFromReadingList({ item: { ...action.book, bookId: action.book.id } }))
        })
     ), { dispatch: false}
   );
@@ -100,7 +100,9 @@ export class ReadingListEffects implements OnInitEffects {
       ofType(ReadingListActions.undoRemoveFromReadingList),
       map((action) => { 
         console.log(action);
-        this.store.dispatch(ReadingListActions.addToReadingList({ book: { id: action.item.bookId, title: action.item.title, authors: action.item.authors, description: action.item.description } })) })
+        this.store.dispatch(ReadingListActions.addToReadingList({book: { ...action.book }}));
+        this.snackBar.dismiss();
+      })
     ), { dispatch: false}
   );
 
