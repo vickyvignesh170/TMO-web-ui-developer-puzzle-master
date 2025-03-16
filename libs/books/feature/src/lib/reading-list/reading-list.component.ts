@@ -21,7 +21,8 @@ export class ReadingListComponent {
     this.store.dispatch(removeFromReadingList({ item }));
   }
 
-  markAsFinished(item: ReadingListItem) {
+  markAsFinished(item: ReadingListItem & {finished: boolean, finishedDate: string}) {
+    if (item.finished) return;
     this.store.dispatch(markBookAsFinished({item: { ...item, finished: true, finishedDate: new Intl.DateTimeFormat('en-US').format(new Date())}}));
   }
 

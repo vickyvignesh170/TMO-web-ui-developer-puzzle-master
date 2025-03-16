@@ -6,10 +6,12 @@ import * as fromBooks from './+state/books.reducer';
 import { BooksEffects } from './+state/books.effects';
 import * as fromReadingList from './+state/reading-list.reducer';
 import { ReadingListEffects } from './+state/reading-list.effects';
+import { MatSnackBarModule } from '@angular/material/snack-bar';
 
 @NgModule({
   imports: [
     CommonModule,
+    MatSnackBarModule,
     StoreModule.forFeature(fromBooks.BOOKS_FEATURE_KEY, fromBooks.reducer),
     StoreModule.forFeature(
       fromReadingList.READING_LIST_FEATURE_KEY,
