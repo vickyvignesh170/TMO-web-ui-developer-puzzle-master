@@ -5,22 +5,38 @@ import {
   clearSearch,
   getAllBooks,
   ReadingListBook,
-  searchBooks
+  searchBooks,
 } from '@tmo/books/data-access';
-import { FormBuilder } from '@angular/forms';
+import {
+  AbstractControl,
+  FormBuilder,
+  FormControl,
+  FormGroup,
+} from '@angular/forms';
 import { Book } from '@tmo/shared/models';
+import { Observable } from 'rxjs';
+
+interface SearchForm {
+  term: string;
+}
+
+type SearchControl = { [key in keyof SearchForm]: AbstractControl };
+type SearchFormGroup = FormGroup & {
+  value: SearchForm;
+  controls: SearchControl;
+};
 
 @Component({
   selector: 'tmo-book-search',
   templateUrl: './book-search.component.html',
-  styleUrls: ['./book-search.component.scss']
+  styleUrls: ['./book-search.component.scss'],
 })
 export class BookSearchComponent implements OnInit {
-  books: ReadingListBook[];
+  books$: Observable<ReadingListBook[]>;
 
   searchForm = this.fb.group({
-    term: ''
-  });
+    term: new FormControl(''),
+  } as SearchControl) as SearchFormGroup;
 
   constructor(
     private readonly store: Store,
@@ -32,9 +48,7 @@ export class BookSearchComponent implements OnInit {
   }
 
   ngOnInit(): void {
-    this.store.select(getAllBooks).subscribe(books => {
-      this.books = books;
-    });
+    this.books$ = this.store.select(getAllBooks);
   }
 
   formatDate(date: void | string) {
@@ -53,10 +67,11 @@ export class BookSearchComponent implements OnInit {
   }
 
   searchBooks() {
-    if (this.searchForm.value.term) {
-      this.store.dispatch(searchBooks({ term: this.searchTerm }));
-    } else {
-      this.store.dispatch(clearSearch());
-    }
+    if (!this.searchForm.value.term) this.store.dispatch(clearSearch());
+    this.store.dispatch(searchBooks({ term: this.searchTerm }));
+  }
+
+  trackByFn(index: number, item: ReadingListBook) {
+    return item.id;
   }
 }
