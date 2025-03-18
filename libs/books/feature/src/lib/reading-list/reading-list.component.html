@@ -6,13 +6,23 @@
     <div class="reading-list-item--details">
       <strong class="reading-list-item--details--title">{{ b.title }}</strong>
       <div class="reading-list-item--details--author">
-        {{ b.authors.join(',') }}
+        {{ b.authors?.join(',') }}
       </div>
     </div>
-    <div>
+    <div class="reading-list-item--actions">
+      <button
+        mat-icon-button
+        [matTooltip]="b.finished ? 'Finished': 'Mark as Finished'"
+        [attr.aria-label]="'Mark ' + b.title + ' as finished'"
+        (click)="markAsFinished(b)"
+      >
+       <mat-icon [ngClass]="b.finished ? 'read': 'unread'">check_circle</mat-icon>
+      </button>
+
       <button
         mat-icon-button
         color="warn"
+        matTooltip="Remove from reading list"
         [attr.aria-label]="'Remove ' + b.title + ' from reading list'"
         (click)="removeFromReadingList(b)"
       >

@@ -19,6 +19,16 @@
     flex-direction: column;
     justify-content: center;
   }
+  > .reading-list-item--actions {
+    display: flex;
+    flex-direction: row;
+    .read {
+      color: green;
+    }
+    .unread {
+      color: gainsboro;
+    }
+  }
 }
 
 .reading-list-item--cover {
