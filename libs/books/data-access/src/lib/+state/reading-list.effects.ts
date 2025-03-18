@@ -11,7 +11,6 @@ import { Store } from '@ngrx/store';
 
 @Injectable()
 export class ReadingListEffects implements OnInitEffects {
-  _storeSnapshot$: Store;
   loadReadingList$ = createEffect(() =>
     this.actions$.pipe(
       ofType(ReadingListActions.init),
